@@ -1,0 +1,65 @@
+﻿<html>
+<head>
+<title>Airsafe</title>
+<meta charset="utf-8">
+<style>
+.groupe{
+	color:white;
+	margin:1px;
+	padding:20px;
+	border:#69D2E7}
+</style>
+<script>
+function GetReadings(){
+    nocache="&nocache";
+    var request=new XMLHttpRequest();
+    request.onreadystatechange=function(){
+        if(this.status==200){
+            if (this.responseXML!=null){
+                var count;
+                var num_an=this.responseXML.getElementsByTagName('reading').length;
+                for (count=0; count<num_an; count++){
+                    document.getElementsByClassName("reading")[count].innerHTML =this.responseXML.getElementsByTagName('reading')[count].childNodes[0].nodeValue;
+                    }
+                }
+            }
+      	}
+    request.open("GET", "?update_readings"+nocache,true);
+    request.send(null);
+    DisplayCurrentTime();
+    setTimeout('GetReadings()', 10000);
+    }
+document.addEventListener('DOMContentLoaded',function(){
+GetReadings();
+}, false);
+</script>
+</head>
+<body style="background-color:#E6EBE0">
+
+<table>
+<tr>
+    <td style="font:#OB486B"><div class="groupe" style="background-color:#21DDA2"><p><center>PM2.5</center></p></div></td>
+    <td><div class="groupe" style="background-color:#21DDA2"><p><center><span class="reading">...</span>µg/m3</center></p></div></td>
+    <td><div class="groupe" style="background-color:#21DDA2"><p></p></div></td>
+</tr>
+<tr>
+    <td><div class="groupe" style="background-color:#AAB3AC"><p><center>PM10</center></p></div></td>
+    <td><div class="groupe" style="background-color:#AAB3AC"><p><center><span class="reading">...</span>µg/m3</center></p></div></td>
+    <td><div class="groupe" style="background-color:#AAB3AC"><p></p></div></td>
+</tr>
+<tr>
+    <td><div class="groupe" style="background-color:#F2D974"><p><center>NO2</center></p></div></td>
+    <td><div class="groupe" style="background-color:#F2D974"><p><center><span class="reading">...</span>µg/m3</center></p></div></td>
+    <td><div class="groupe" style="background-color:#F2D974"><p></p></div></td>
+</tr>
+<tr>
+    <td><div class="groupe" style="background-color:#00DFFC"><p><center>O3</center></p></div></td>
+    <td><div class="groupe" style="background-color:#00DFFC"><p><center><span class="reading">...</span>µg/m3</center></p></div></td>
+    <td><div class="groupe" style="background-color:#00DFFC"><p></p></div></td>
+</tr>
+<tr>
+    <td><div class="groupe" style="background-color:#81ADA2"><p><center>Température</center></p></div></td>
+    <td><div class="groupe" style="background-color:#81ADA2"><p><center><span class="reading">...</span>&deg;C</center></p></div></td>
+    <td><div class="groupe" style="background-color:#81ADA2"><p></p></div></td>
+</tr>
+</table>

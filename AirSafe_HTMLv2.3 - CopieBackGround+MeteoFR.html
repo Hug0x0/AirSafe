@@ -1,0 +1,109 @@
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
+#include <Wire.h>
+
+MDNSResponder mdns;
+
+const char* ssid="Wifi";
+const char* pass="Mot de passe";
+
+ESP8266WebServer server(80);
+
+int pm25=52,pm10=103,no2=94,o3=71,temp=-5;
+
+String webpage;
+
+void setup(void){
+Wire.begin(2,4);
+Wire.onReceive(data);
+webpage += "<html>";
+webpage += "<head>";
+webpage += "<title>Airsafe</title>";
+webpage += "<meta charset='utf-8'>";
+webpage += "<style>.groupe{color:white;margin:1px;padding:20px;border:#69D2E7}</style>";
+webpage += "</head>";
+webpage += "<body style='background-color:#E6EBE0'>";
+webpage += "<center><table>";
+webpage += "<tr><td>";
+webpage += "<table>";
+webpage += "<tr>";
+webpage += "<td bgcolor='#21DDA2' style='font:#OB486B'><div class='groupe'><p><center>PM2.5</center></p></div></td>";
+webpage += "<td bgcolor='#21DDA2'><div class='groupe'><p><center>";
+webpage += pm25;
+webpage += "µg/m3</center></p></div></td>";
+webpage += "<td bgcolor='#21DDA2'><div class='groupe'><p>min:0</p><p>max:120</p><meter low='0' high='' max='120' value='";
+webpage += pm25;
+webpage += "'></meter></div></td>";
+webpage += "</tr><tr>";
+webpage += "<td bgcolor='#AAB3AC'><div class='groupe'><p><center>PM10</center></p></div></td>";
+webpage += "<td bgcolor='#AAB3AC'><div class='groupe'><p><center>";
+webpage += pm10;
+webpage += "µg/m3</center></p></div></td>";
+webpage += "<td bgcolor='#AAB3AC'><div class='groupe'><p>min:0</p><p>max:220</p><meter min='0' max='220' value='";
+webpage += pm10;
+webpage += "'></meter></div></td>";
+webpage += "</tr><tr>";
+webpage += "<td bgcolor='#F2D974'><div class='groupe'><p><center>NO2</center></p></div></td>";
+webpage += "<td bgcolor='#F2D974'><div class='groupe'><p><center>";
+webpage += no2;
+webpage += "µg/m3</center></p></div></td>";
+webpage += "<td bgcolor='#F2D974'><div class='groupe'><p>min:0</p><p>max:500</p><meter min='0' max='500' value='";
+webpage += no2;
+webpage += "'></meter></div></td>";
+webpage += "</tr><tr>";
+webpage += "<td bgcolor='00DFFC'><div class='groupe'><p><center>O3</center></p></div></td>";
+webpage += "<td bgcolor='00DFFC'><div class='groupe'><p><center>";
+webpage += o3;
+webpage += "µg/m3</center></p></div></td>";
+webpage += "<td bgcolor='00DFFC'><div class='groupe'><p>min:0</p><p>max:500</p><meter min='0' max='280' value='";
+webpage += o3;
+webpage += "'></meter></div></td>";
+webpage += "</tr><tr>";
+webpage += "<td bgcolor='81ADA2'><div class='groupe'><p><center>Température</center></p></div></td>";
+webpage += "<td bgcolor='81ADA2'><div class='groupe'><p><center>";
+webpage += temp;
+webpage += "&deg;C</center></p></div></td>";
+webpage += "<td bgcolor='81ADA2'><div class='groupe'><p>min:-20</p><p>max:40</p><meter min='-20' max='40' value='";
+webpage += temp;
+webpage += "'></meter></div></td>";
+webpage += "</table></td>";
+webpage += "<td>";
+webpage += "<center><script charset='UTF-8' src='http://www.meteofrance.com/mf3-rpc-portlet/rest/vignettepartenaire/751150/type/VILLE_FRANCE/size/PORTRAIT_VIGNETTE' type='text/javascript'></script></center>";
+webpage += "</td></tr></table></center>";
+webpage += "</head></html>";
+delay(1000);
+Serial.begin(115200);
+while(!Serial){}
+Serial.println("Initialisation de l'ESP8266...");
+Serial.print("Connection à ");
+Serial.println(ssid);
+WiFi.begin(ssid,pass);
+Serial.print("");
+while(WiFi.status() != WL_CONNECTED){
+  delay(500);
+  Serial.print(".");
+}
+Serial.println();
+Serial.println("Connecté au WiFi");
+Serial.println("Addresse IP: ");
+Serial.println(WiFi.localIP());
+if(mdns.begin("esp8266",WiFi.localIP())){
+  Serial.println("MDNS Responder started");
+  }
+server.on("/",[](){
+  server.send(200,"text/html",webpage);});
+server.begin();
+Serial.println("Serveur HTTP créé");
+}
+
+void loop(void){server.handleClient();}
+
+void data(int event){
+pm25=Wire.read();
+pm10=Wire.read();
+no2=Wire.read();
+o3=Wire.read();
+temp=Wire.read();}
+
